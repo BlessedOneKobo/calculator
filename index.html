@@ -7,6 +7,39 @@
   <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
+  <div class="container">
+    <div class="calculator">
+      <div class="row display">
+        <span class="number"></span>
+      </div>
+      <div class="row keypad">
+        <div class="row">
+          <button data-type="number" data-key="seven">7</button>
+          <button data-type="number" data-key="eight">8</button>
+          <button data-type="number" data-key="nine">9</button>
+          <button data-type="operator" data-key="divide">/</button>
+        </div>
+        <div class="row">
+          <button data-type="number" data-key="four">4</button>
+          <button data-type="number" data-key="five">5</button>
+          <button data-type="number" data-key="six">6</button>
+          <button data-type="operator" data-key="multiply">x</button>
+        </div>
+        <div class="row">
+          <button data-type="number" data-key="one">1</button>
+          <button data-type="number" data-key="two">2</button>
+          <button data-type="number" data-key="three">3</button>
+          <button data-type="operator" data-key="subtract">-</button>
+        </div>
+        <div class="row">
+          <button data-type="util" data-key="clear">C</button>
+          <button data-type="number" data-key="zero">0</button>
+          <button data-type="operator" data-key="equals">=</button>
+          <button data-type="operator" data-key="add">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="main.js" type="text/javascript"></script>
 </body>
 </html>

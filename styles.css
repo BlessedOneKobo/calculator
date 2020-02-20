@@ -46,3 +46,85 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
+
+/* Custom Styles */
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+}
+
+button {
+  border: 2px solid #bababa;
+}
+
+button:hover, button[data-type='number']:hover {
+  cursor: pointer;
+  background-color: #c8cfd4;
+  border-color: #929aa0;
+}
+
+.container {
+  width: 50%;
+  margin: 2em auto;
+}
+
+.calculator {
+  background-color: #bababa;
+  width: 70%;
+  margin: 0 auto;
+  display: flex;
+  flex-flow: column nowrap;
+  border: 1px solid #bababa;
+  padding: .25em;
+}
+
+.calculator > .row {
+  flex: 0 1 100%;
+}
+
+.calculator > .display {
+  display: flex;
+  flex-flow: row nowrap;
+  font-size: 2.8em;
+}
+
+.calculator > .display > .number {
+  flex: 1 1 100%;
+  justify-content: flex-end;
+  text-align: right;
+  padding: .5em 0.25em;
+}
+
+.calculator > .keypad {
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.calculator > .keypad > .row {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.calculator > .keypad > .row > button {
+  flex: 1 1 25%;
+  height: 4em;
+  font-size: 1.25em;
+  margin-right: .25%;
+  margin-bottom: .25%;
+}
+
+.calculator > .keypad > .row > button:last-child {
+  margin-right: 0;
+}
+
+.calculator > .keypad > .row:last-child button {
+  margin-bottom: 0;
+}
+
+button[data-type='number'] {
+  background-color: #fff;
+  font-weight: bold;
+}

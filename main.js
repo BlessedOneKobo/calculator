@@ -1,7 +1,8 @@
-let operands = [];
-let operator = '';
 let displayValue = 0;
+let operands = [displayValue];
+let operator = '';
 let previousClick = '';
+let divideByZeroFlag = false;
 
 // Calculator components
 
@@ -21,6 +22,11 @@ clearBtn.addEventListener('click', handleReset);
 
 function handleNumberClick(e) {
   if (previousClick === 'operator') {
+    if (divideByZeroFlag) {
+      operatorBtns.forEach((btn) => btn.disabled = false);
+      divideByZeroFlag = false;
+    }
+
     clearDisplay();
   }
 
@@ -30,17 +36,28 @@ function handleNumberClick(e) {
 }
 
 function handleOperatorClick(e) {
+  const clickedOperator = e.target.dataset.key;
   if (previousClick === 'number') {
     operands.push(displayValue);
   }
 
-  if (operands.length === 2) {
-    displayValue = operate(operands, operator);
-    numberDisplay.textContent = displayValue;
-    operands.push(displayValue);
+  if (operands.length === 2 || clickedOperator === 'equ') {
+    const result = operate(operands, operator);
+
+    // Division by zero
+    if (result === undefined) {
+      displayValue = 0;
+      divideByZeroFlag = true;
+      numberDisplay.textContent = 'Cannot divide by zero';
+      operatorBtns.forEach((btn) => btn.disabled = true);
+    } else {
+      operands.push(result);
+      displayValue = result;
+      numberDisplay.textContent = displayValue;
+    }
   }
 
-  operator = e.target.dataset.key;
+  operator = clickedOperator;
   previousClick = 'operator';
 }
 
@@ -49,6 +66,7 @@ function handleReset() {
   numberDisplay.textContent = displayValue;
   operands = [];
   operator = '';
+  operatorBtns.forEach((btn) => btn.disabled = false);
 }
 
 // Calculator Operators/Utilities
@@ -65,6 +83,7 @@ function operate(operands, operator) {
     case 'sub': result = sub(...operands); break;
     case 'mul': result = mul(...operands); break;
     case 'div': result = div(...operands); break;
+    default:    result = operands.pop();   break;
   }
 
   handleReset();
@@ -84,5 +103,8 @@ function mul(a, b) {
 }
 
 function div(a, b) {
+  if (b === 0) {
+    return undefined;
+  }
   return a / b;
 }

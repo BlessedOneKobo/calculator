@@ -57,27 +57,26 @@ body {
 }
 
 button {
-  border: 2px solid #bababa;
+  border: none;
 }
 
 button:hover, button[data-type='number']:hover {
   cursor: pointer;
-  background-color: #c8cfd4;
-  border-color: #929aa0;
+  background-color: rgba(200, 207, 212, .5);
+  box-shadow: 2px 2px inset rgba(186, 186, 186, 1), -2px -2px inset rgba(186, 186, 186, 1);
 }
 
 .container {
-  width: 50%;
+  width: 75%;
   margin: 2em auto;
 }
 
 .calculator {
-  background-color: #bababa;
-  width: 70%;
+  background-color: rgba(186, 186, 186, .5);
   margin: 0 auto;
   display: flex;
   flex-flow: column nowrap;
-  border: 1px solid #bababa;
+  border: 1px solid rgba(186, 186, 186, .5);;
   padding: .25em;
 }
 
@@ -112,8 +111,8 @@ button:hover, button[data-type='number']:hover {
   flex: 1 1 25%;
   height: 4em;
   font-size: 1.25em;
-  margin-right: .25%;
-  margin-bottom: .25%;
+  margin-right: .50%;
+  margin-bottom: .50%;
 }
 
 .calculator > .keypad > .row > button:last-child {
@@ -125,6 +124,6 @@ button:hover, button[data-type='number']:hover {
 }
 
 button[data-type='number'] {
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, .9);
   font-weight: bold;
 }

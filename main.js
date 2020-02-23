@@ -1,3 +1,4 @@
+const maxDisplayDigits = 9;
 let displayValue = 0;
 let operands = [displayValue];
 let operator = '';
@@ -46,19 +47,38 @@ function handleOperatorClick(e) {
   }
 
   if (operands.length === 2 || clickedOperator === 'equ') {
-    const result = operate(operands, operator);
+    let result = operate(operands, operator);
 
-    // Division by zero
     if (result === undefined) {
+      // Handle division by zero
       displayValue = 0;
       divideByZeroFlag = true;
       numberDisplay.textContent = 'Cannot divide by zero';
       operatorBtns.forEach((btn) => btn.disabled = true);
     } else if (!canBeDisplayed(result)) {
+      // Handle integer overflow
       displayValue = 0;
       numberDisplay.textContent = 'Overflow';
       operatorBtns.forEach((btn) => btn.disabled = true);
     } else {
+      const resultStr = String(result);
+
+      // Handle floating point output
+      if (resultStr.includes('.')) {
+        const numDigits = resultStr.length - 1;
+        const numDigitsWholeNumber = resultStr.split('.')[0].length;
+
+        if (numDigits > maxDisplayDigits) {
+          const decimalPlaces = maxDisplayDigits - numDigitsWholeNumber;
+          if (decimalPlaces < 0) {
+            result = Number(result.toFixed(0));
+          } else {
+            result = Number(result.toFixed(decimalPlaces));
+          }
+        }
+      }
+
+      // Save result and display it
       operands.push(result);
       displayValue = result;
       numberDisplay.textContent = displayValue;
@@ -92,6 +112,7 @@ function clearDisplay() {
 
 function operate(operands, operator) {
   let result;
+
   switch(operator) {
     case 'add': result = add(...operands); break;
     case 'sub': result = sub(...operands); break;
@@ -120,5 +141,6 @@ function div(a, b) {
   if (b === 0) {
     return undefined;
   }
+
   return a / b;
 }

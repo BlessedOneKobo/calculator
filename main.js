@@ -30,8 +30,12 @@ function handleNumberClick(e) {
     clearDisplay();
   }
 
-  displayValue = displayValue * 10 + Number(e.target.textContent);
-  numberDisplay.textContent = displayValue;
+  const temp = displayValue * 10 + Number(e.target.textContent);
+  if (canBeDisplayed(temp)) {
+    displayValue = temp;
+    numberDisplay.textContent = displayValue;
+  }
+
   previousClick = 'number';
 }
 
@@ -49,6 +53,10 @@ function handleOperatorClick(e) {
       displayValue = 0;
       divideByZeroFlag = true;
       numberDisplay.textContent = 'Cannot divide by zero';
+      operatorBtns.forEach((btn) => btn.disabled = true);
+    } else if (!canBeDisplayed(result)) {
+      displayValue = 0;
+      numberDisplay.textContent = 'Overflow';
       operatorBtns.forEach((btn) => btn.disabled = true);
     } else {
       operands.push(result);
@@ -70,6 +78,12 @@ function handleReset() {
 }
 
 // Calculator Operators/Utilities
+
+function canBeDisplayed(number) {
+  const minInt = 0;
+  const maxInt = 999999999;
+  return minInt <= number && number <= maxInt;
+}
 
 function clearDisplay() {
   displayValue = 0;

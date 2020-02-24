@@ -42,21 +42,19 @@ function handleNumberClick(e) {
 
   // Check if clicked number should be displayed as is or appended
   if (previousClick === 'decimal' || displayStr !== '0') {
-    displayStr += clickedNumber;
+    if (canBeDisplayed(displayStr + clickedNumber)) {
+      displayStr += clickedNumber;
+    }
   } else {
     displayStr = clickedNumber;
   }
 
-  // Don't display if number is too big (i.e leave previous value)
-  if (canBeDisplayed(displayStr)) {
-    numberDisplay.textContent = displayStr;
-  }
-
+  numberDisplay.textContent = displayStr;
   previousClick = 'number';
 }
 
 function handleOperatorClick(e) {
-  let hasOverflowed = false;
+  let validDisplayFlag = true;
   const clickedOperator = e.target.dataset.key;
   if (previousClick === 'number') {
     operands.push(Number(displayStr));
@@ -72,22 +70,22 @@ function handleOperatorClick(e) {
       divideByZeroFlag = true;
       numberDisplay.textContent = 'Cannot divide by zero';
     } else {
-      hasOverflowed = !canBeDisplayed(displayStr);
+      validDisplayFlag = canBeDisplayed(displayStr);
       if (displayStr.includes('.')) {
-        hasOverflowed = processFloatResult(result);
+        validDisplayFlag = processFloatResult(result);
       }
-
-      if (hasOverflowed) {
+      
+      if (validDisplayFlag) {
+        numberDisplay.textContent = displayStr;
+      } else {
         displayStr = '0';
         numberDisplay.textContent = 'Overflow'
-      } else {
-        numberDisplay.textContent = displayStr;
       }
 
       operands.push(Number(displayStr));
     }
-
-    if (divideByZeroFlag || hasOverflowed) {
+    
+    if (!validDisplayFlag || divideByZeroFlag) {
       operatorBtns.forEach((btn) => btn.disable = true);
     }
   }
@@ -116,7 +114,7 @@ function processFloatResult(result) {
     displayStr = result.toFixed((decimalPlaces < 0) ? 0 : decimalPlaces);
   }
 
-  return !canBeDisplayed(displayStr);
+  return canBeDisplayed(displayStr);
 }
 
 function canBeDisplayed(str) {

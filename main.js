@@ -100,10 +100,24 @@ function handleUtilityClick(e) {
   switch(utilityType) {
     case 'cls': clearCalculator(); break;
     case 'dec': addDecimalPoint(); break;
+    case 'bck': removeCharacter(); break;
   }
 }
 
 // Calculator Operators/Utilities
+
+// TODO - Disable backspace for calculation result
+function removeCharacter () {
+  const len = displayStr.length;
+
+  if (len < 2) {
+    displayStr = '0';
+  } else {
+    displayStr = displayStr.slice(0, len - 1);
+  }
+
+  numberDisplay.textContent = displayStr;
+}
 
 function processFloatResult(result) {
   const numDigits = displayStr.length - 1;

@@ -1,3 +1,5 @@
+// INITIALIZATION
+
 const maxDisplayDigits = 9;
 let displayStr = '0';
 
@@ -6,7 +8,7 @@ let operator = '';
 let previousClick = '';
 let divideByZeroFlag = false;
 
-// Calculator components
+// CALCULATOR COMPONENTS
 
 const numberDisplay = document.querySelector('.display > .number');
 numberDisplay.textContent = displayStr;
@@ -14,7 +16,7 @@ const numberBtns = document.querySelectorAll('button[data-type="number"]');
 const operatorBtns = document.querySelectorAll('button[data-type="operator"]');
 const utilityBtns = document.querySelectorAll('button[data-type="utility"]');
 
-// Event listeners
+// EVENT LISTENERS
 
 numberBtns.forEach((btn) => {
   btn.addEventListener('click', handleNumberClick)
@@ -26,7 +28,7 @@ utilityBtns.forEach((btn) => {
   btn.addEventListener('click', handleUtilityClick)
 });
 
-// Event handlers
+// EVENT HANDLERS
 
 function handleNumberClick(e) {
   const clickedNumber = e.target.textContent;
@@ -104,7 +106,7 @@ function handleUtilityClick(e) {
   }
 }
 
-// Calculator Operators/Utilities
+// CALCULATOR OPERATORS/UTILITIES
 
 // TODO - Disable backspace for calculation result
 function removeCharacter () {

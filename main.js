@@ -1,6 +1,7 @@
 const maxDisplayDigits = 9;
-let displayValue = 0;
-let operands = [displayValue];
+let displayStr = '0';
+
+let operands = [0];
 let operator = '';
 let previousClick = '';
 let divideByZeroFlag = false;
@@ -8,20 +9,28 @@ let divideByZeroFlag = false;
 // Calculator components
 
 const numberDisplay = document.querySelector('.display > .number');
-numberDisplay.textContent = displayValue;
+numberDisplay.textContent = displayStr;
 const numberBtns = document.querySelectorAll('button[data-type="number"]');
 const operatorBtns = document.querySelectorAll('button[data-type="operator"]');
-const clearBtn = document.querySelector('button[data-key="clear"]');
+const utilityBtns = document.querySelectorAll('button[data-type="utility"]');
 
 // Event listeners
 
-numberBtns.forEach((btn) => btn.addEventListener('click', handleNumberClick));
-operatorBtns.forEach((btn) => btn.addEventListener('click', handleOperatorClick));
-clearBtn.addEventListener('click', handleReset);
+numberBtns.forEach((btn) => {
+  btn.addEventListener('click', handleNumberClick)
+});
+operatorBtns.forEach((btn) => {
+  btn.addEventListener('click', handleOperatorClick)
+});
+utilityBtns.forEach((btn) => {
+  btn.addEventListener('click', handleUtilityClick)
+});
 
 // Event handlers
 
 function handleNumberClick(e) {
+  const clickedNumber = e.target.textContent;
+
   if (previousClick === 'operator') {
     if (divideByZeroFlag) {
       operatorBtns.forEach((btn) => btn.disabled = false);
@@ -31,57 +40,55 @@ function handleNumberClick(e) {
     clearDisplay();
   }
 
-  const temp = displayValue * 10 + Number(e.target.textContent);
-  if (canBeDisplayed(temp)) {
-    displayValue = temp;
-    numberDisplay.textContent = displayValue;
+  // Check if clicked number should be displayed as is or appended
+  if (previousClick === 'decimal' || displayStr !== '0') {
+    displayStr += clickedNumber;
+  } else {
+    displayStr = clickedNumber;
+  }
+
+  // Don't display if number is too big (i.e leave previous value)
+  if (canBeDisplayed(displayStr)) {
+    numberDisplay.textContent = displayStr;
   }
 
   previousClick = 'number';
 }
 
 function handleOperatorClick(e) {
+  let hasOverflowed = false;
   const clickedOperator = e.target.dataset.key;
   if (previousClick === 'number') {
-    operands.push(displayValue);
+    operands.push(Number(displayStr));
   }
 
   if (operands.length === 2 || clickedOperator === 'equ') {
-    let result = operate(operands, operator);
+    const result = operate(operands, operator);
+    displayStr = String(result);
 
     if (result === undefined) {
       // Handle division by zero
-      displayValue = 0;
+      displayStr = '0';
       divideByZeroFlag = true;
       numberDisplay.textContent = 'Cannot divide by zero';
-      operatorBtns.forEach((btn) => btn.disabled = true);
-    } else if (!canBeDisplayed(result)) {
-      // Handle integer overflow
-      displayValue = 0;
-      numberDisplay.textContent = 'Overflow';
-      operatorBtns.forEach((btn) => btn.disabled = true);
     } else {
-      const resultStr = String(result);
-
-      // Handle floating point output
-      if (resultStr.includes('.')) {
-        const numDigits = resultStr.length - 1;
-        const numDigitsWholeNumber = resultStr.split('.')[0].length;
-
-        if (numDigits > maxDisplayDigits) {
-          const decimalPlaces = maxDisplayDigits - numDigitsWholeNumber;
-          if (decimalPlaces < 0) {
-            result = Number(result.toFixed(0));
-          } else {
-            result = Number(result.toFixed(decimalPlaces));
-          }
-        }
+      hasOverflowed = !canBeDisplayed(displayStr);
+      if (displayStr.includes('.')) {
+        hasOverflowed = processFloatResult(result);
       }
 
-      // Save result and display it
-      operands.push(result);
-      displayValue = result;
-      numberDisplay.textContent = displayValue;
+      if (hasOverflowed) {
+        displayStr = '0';
+        numberDisplay.textContent = 'Overflow'
+      } else {
+        numberDisplay.textContent = displayStr;
+      }
+
+      operands.push(Number(displayStr));
+    }
+
+    if (divideByZeroFlag || hasOverflowed) {
+      operatorBtns.forEach((btn) => btn.disable = true);
     }
   }
 
@@ -89,25 +96,60 @@ function handleOperatorClick(e) {
   previousClick = 'operator';
 }
 
-function handleReset() {
-  displayValue = 0;
-  numberDisplay.textContent = displayValue;
+function handleUtilityClick(e) {
+  const utilityType = e.target.dataset.key;
+
+  switch(utilityType) {
+    case 'cls': clearCalculator(); break;
+    case 'dec': addDecimalPoint(); break;
+  }
+}
+
+// Calculator Operators/Utilities
+
+function processFloatResult(result) {
+  const numDigits = displayStr.length - 1;
+  const numDigitsWholeNumber = displayStr.split('.')[0].length;
+
+  if (numDigits > maxDisplayDigits) {
+    const decimalPlaces = maxDisplayDigits - numDigitsWholeNumber;
+    displayStr = result.toFixed((decimalPlaces < 0) ? 0 : decimalPlaces);
+  }
+
+  return !canBeDisplayed(displayStr);
+}
+
+function canBeDisplayed(str) {
+  const strLen = str.includes('.') ? str.length - 1 : str.length;
+  return strLen <= maxDisplayDigits;
+}
+
+function clearDisplay() {
+  displayStr = '0';
+  numberDisplay.textContent = displayStr;
+}
+
+function clearCalculator() {
+  // Reset display
+  displayStr = '0';
+  numberDisplay.textContent = displayStr;
+
+  // Reset calculation utilities
   operands = [];
   operator = '';
   operatorBtns.forEach((btn) => btn.disabled = false);
 }
 
-// Calculator Operators/Utilities
+function addDecimalPoint() {
+  if (previousClick === 'operator') {
+    clearDisplay();
+  }
 
-function canBeDisplayed(number) {
-  const minInt = 0;
-  const maxInt = 999999999;
-  return minInt <= number && number <= maxInt;
-}
+  if (!displayStr.includes('.')) {
+    displayStr += '.';
+  }
 
-function clearDisplay() {
-  displayValue = 0;
-  numberDisplay.textContent = displayValue;
+  previousClick = 'decimal';
 }
 
 function operate(operands, operator) {
@@ -121,7 +163,7 @@ function operate(operands, operator) {
     default:    result = operands.pop();   break;
   }
 
-  handleReset();
+  clearCalculator();
   return result;
 }
 

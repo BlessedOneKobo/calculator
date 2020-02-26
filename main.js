@@ -96,6 +96,7 @@ class CalculatorDisplay {
 
     if (!this.str.includes('.')) {
       this.str += '.';
+      this.show();
     }
 
     return this;

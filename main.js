@@ -1,23 +1,174 @@
-// INITIALIZATION
+class CalculatorEvaluation {
+  constructor() {
+    this.operands = [0];
+    this.operator = '';
+    this.divideByZeroError = false;
+  }
 
-const maxDisplayDigits = 9;
-let displayStr = '0';
+  // Evaluate expression
+  evaluate(displayObj) {
+    let result;
 
-let operands = [0];
-let operator = '';
-let previousClick = '';
-let divideByZeroFlag = false;
+    switch(this.operator) {
+      case 'add': result = this.add();          break;
+      case 'sub': result = this.sub();          break;
+      case 'mul': result = this.mul();          break;
+      case 'div': result = this.div();          break;
+      default:    result = this.operands.pop(); break;
+    }
 
-// CALCULATOR COMPONENTS
+    this.clear();
+    displayObj.clear();
+    return result;
+  }
 
+  // Addition helper
+  add() {
+    return this.operands[0] + this.operands[1];
+  }
+
+  // Subtraction helper
+  sub() {
+    return this.operands[0] - this.operands[1];
+  }
+
+  // Multiplication helper
+  mul() {
+    return this.operands[0] * this.operands[1];
+  }
+
+  // Division helper; Returns undefined for division by zero
+  div() {
+    if (this.operands[1] === 0) {
+      return undefined;
+    }
+
+    return this.operands[0] / this.operands[1];
+  }
+
+  // Reset evaluation object
+  clear(displayObj, operatorBtns) {
+    this.operands = [];
+    this.operator = '';
+    this.divideByZeroError = false;
+  }
+}
+
+class CalculatorDisplay {
+  constructor(domObj, maxDisplayDigits) {
+    this.str = '0';
+    this.domObj = domObj;
+    this.maxDisplayDigits = maxDisplayDigits;
+    this.show();
+  }
+
+  // Display error message
+  showError(errorMsg) {
+    this.str = '0';
+    this.show(errorMsg);
+  }
+
+  // Display number
+  showNumber(num) {
+    this.str = String(num);
+    this.show();
+  }
+
+  // Display number input from calculator button
+  showNumberFromButton(numStr, previousClick) {
+    // Check if clicked number should be displayed as is or appended
+    if (previousClick.type === 'decimal' || this.str !== '0') {
+      if (this.canBeDisplayed(this.str + numStr)) {
+        this.str += numStr;
+      }
+    } else {
+      this.str = numStr;
+    }
+    
+    return this;
+  }
+
+  // Append decimal point to display
+  showDecimalPoint(previousClick) {
+    if (previousClick.type === 'operator') {
+      this.clear();
+    }
+
+    if (!this.str.includes('.')) {
+      this.str += '.';
+    }
+
+    return this;
+  }
+
+  // TODO - Disable backspace for calculation result
+  // Delete a single digit from display
+  removeCharacter() {
+    if (
+      (this.str.length === 2 && this.str.startsWith('-'))
+      || this.str.length < 2
+    ) {
+      this.str = '0';
+    } else {
+      this.str = this.str.slice(0, this.str.length - 1);
+    }
+
+    this.show();
+  }
+
+  // Check if a given string will fit on the display
+  canBeDisplayed(str) {
+    let strLen;
+    if (str.includes('.')) {
+      process this.checkFloat(str);
+      strLen = str.length - 1;
+    } else {
+      strLen = str.length;
+    }
+
+    return strLen <= this.maxDisplayDigits;
+  }
+
+  // Try and fit a floating point number on the display
+  processFloat(floatStr) {
+    const numDigits = floatStr.length - 1;
+    const numDigitsWholeNumber = floatStr.split('.')[0].length;
+
+    if (numDigits > this.maxDisplayDigits) {
+      let decimalPlaces = displayObj.maxDisplayDigits - numDigitsWholeNumber;
+      decimalPlaces = (decimalPlaces < 0) ? 0 : decimalPlaces;
+      floatStr = Number(floatStr).toFixed(decimalPlaces);
+    }
+
+    return floatStr;
+  }
+
+  // Push a string to the display
+  show(str) {
+    this.domObj.textContent = str || this.str;
+  }
+
+  // Clear display contents
+  clear() {
+    this.str = '0';
+    this.domObj.textContent = this.str;
+  }
+}
+
+// ---| INITIALIZATION |---
+
+// DOM ELEMENTS
 const numberDisplay = document.querySelector('.display > .number');
-numberDisplay.textContent = displayStr;
 const numberBtns = document.querySelectorAll('button[data-type="number"]');
 const operatorBtns = document.querySelectorAll('button[data-type="operator"]');
 const utilityBtns = document.querySelectorAll('button[data-type="utility"]');
 
-// EVENT LISTENERS
+// CUSTOM OBJECTS
+const previousClick = {type: null};
+const evalObj = new CalculatorEvaluation();
+const displayObj = new CalculatorDisplay(numberDisplay, 9);
 
+// ---| EVENT LISTENERS |---
 numberBtns.forEach((btn) => {
   btn.addEventListener('click', handleNumberClick)
 });
@@ -28,175 +179,87 @@ utilityBtns.forEach((btn) => {
   btn.addEventListener('click', handleUtilityClick)
 });
 
-// EVENT HANDLERS
+// ---| EVENT HANDLERS |---
 
 function handleNumberClick(e) {
   const clickedNumber = e.target.textContent;
 
-  if (previousClick === 'operator') {
-    if (divideByZeroFlag) {
-      operatorBtns.forEach((btn) => btn.disabled = false);
-      divideByZeroFlag = false;
+  if (previousClick.type === 'operator') {
+    if (evalObj.divideByZeroError) {
+      disableButtonCollection(operatorBtns);
     }
 
-    clearDisplay();
+    displayObj.clear();
   }
 
-  // Check if clicked number should be displayed as is or appended
-  if (previousClick === 'decimal' || displayStr !== '0') {
-    if (canBeDisplayed(displayStr + clickedNumber)) {
-      displayStr += clickedNumber;
-    }
-  } else {
-    displayStr = clickedNumber;
-  }
-
-  numberDisplay.textContent = displayStr;
-  previousClick = 'number';
+  displayObj.showNumberFromButton(clickedNumber, previousClick).show();
+  previousClick.type = 'number';
 }
 
 function handleOperatorClick(e) {
-  let validDisplayFlag = true;
   const clickedOperator = e.target.dataset.key;
-  if (previousClick === 'number') {
-    operands.push(Number(displayStr));
+
+  if (previousClick.type === 'number') {
+    const newOperand = Number(displayObj.str);
+    evalObj.operands.push(newOperand);
   }
 
-  if (operands.length === 2 || clickedOperator === 'equ') {
-    const result = operate(operands, operator);
-    displayStr = String(result);
-
-    if (result === undefined) {
-      // Handle division by zero
-      displayStr = '0';
-      divideByZeroFlag = true;
-      numberDisplay.textContent = 'Cannot divide by zero';
-    } else {
-      validDisplayFlag = canBeDisplayed(displayStr);
-      if (displayStr.includes('.')) {
-        validDisplayFlag = processFloatResult(result);
-      }
-      
-      if (validDisplayFlag) {
-        numberDisplay.textContent = displayStr;
-      } else {
-        displayStr = '0';
-        numberDisplay.textContent = 'Overflow'
-      }
-
-      operands.push(Number(displayStr));
-    }
-    
-    if (!validDisplayFlag || divideByZeroFlag) {
-      operatorBtns.forEach((btn) => btn.disable = true);
-    }
+  if (evalObj.operands.length === 2 || clickedOperator === 'equ') {
+    const result = evalObj.evaluate(displayObj);
+    determineDisplayAction(result);
   }
 
-  operator = clickedOperator;
-  previousClick = 'operator';
+  evalObj.operator = clickedOperator;
+  previousClick.type = 'operator';
 }
 
 function handleUtilityClick(e) {
-  const utilityType = e.target.dataset.key;
+  const clickedUtility = e.target.dataset.key;
 
-  switch(utilityType) {
-    case 'cls': clearCalculator(); break;
-    case 'dec': addDecimalPoint(); break;
-    case 'bck': removeCharacter(); break;
+  switch(clickedUtility) {
+    case 'cls':
+      displayObj.clear();
+      evalObj.clear();
+      enableButtonCollection(operatorBtns, numberBtns, utilityBtns);
+      break;
+    case 'dec':
+      displayObj.showDecimalPoint(previousClick);
+      break;
+    case 'bck':
+      displayObj.removeCharacter();
+      break;
   }
 }
 
-// CALCULATOR OPERATORS/UTILITIES
+// ---| CALCULATOR UTILITIES |---
 
-// TODO - Disable backspace for calculation result
-function removeCharacter () {
-  const len = displayStr.length;
+function determineDisplayAction(result) {
+  let resultStr = String(result);
 
-  if (len < 2) {
-    displayStr = '0';
+  if (result === undefined) {
+    resultStr = 'Cannot divide by zero';
   } else {
-    displayStr = displayStr.slice(0, len - 1);
+    resultStr = displayObj.canBeDisplayed(resultStr) ? resultStr : 'Overflow';
   }
 
-  numberDisplay.textContent = displayStr;
-}
-
-function processFloatResult(result) {
-  const numDigits = displayStr.length - 1;
-  const numDigitsWholeNumber = displayStr.split('.')[0].length;
-
-  if (numDigits > maxDisplayDigits) {
-    const decimalPlaces = maxDisplayDigits - numDigitsWholeNumber;
-    displayStr = result.toFixed((decimalPlaces < 0) ? 0 : decimalPlaces);
+  if (!isNaN(resultStr)) {
+    displayObj.showNumber(resultStr);
+    evalObj.operands.push(Number(resultStr));
+  } else {
+    displayObj.showError(resultStr);
+    disableButtonCollection(operatorBtns, numberBtns, utilityBtns);
+    document.querySelector('[data-key="cls"]').disabled = false;
   }
-
-  return canBeDisplayed(displayStr);
 }
 
-function canBeDisplayed(str) {
-  const strLen = str.includes('.') ? str.length - 1 : str.length;
-  return strLen <= maxDisplayDigits;
+function disableButtonCollection(...btnCollection) {
+  btnCollection.forEach((group) => {
+    group.forEach((btn) => btn.disabled = true);
+  });
 }
 
-function clearDisplay() {
-  displayStr = '0';
-  numberDisplay.textContent = displayStr;
-}
-
-function clearCalculator() {
-  // Reset display
-  displayStr = '0';
-  numberDisplay.textContent = displayStr;
-
-  // Reset calculation utilities
-  operands = [];
-  operator = '';
-  operatorBtns.forEach((btn) => btn.disabled = false);
-}
-
-function addDecimalPoint() {
-  if (previousClick === 'operator') {
-    clearDisplay();
-  }
-
-  if (!displayStr.includes('.')) {
-    displayStr += '.';
-  }
-
-  previousClick = 'decimal';
-}
-
-function operate(operands, operator) {
-  let result;
-
-  switch(operator) {
-    case 'add': result = add(...operands); break;
-    case 'sub': result = sub(...operands); break;
-    case 'mul': result = mul(...operands); break;
-    case 'div': result = div(...operands); break;
-    default:    result = operands.pop();   break;
-  }
-
-  clearCalculator();
-  return result;
-}
-
-function add(a, b) {
-  return a + b;
-}
-
-function sub(a, b) {
-  return a - b;
-}
-
-function mul(a, b) {
-  return a * b;
-}
-
-function div(a, b) {
-  if (b === 0) {
-    return undefined;
-  }
-
-  return a / b;
+function enableButtonCollection(...btnCollection) {
+  btnCollection.forEach((group) => {
+    group.forEach((btn) => btn.disabled = false);
+  });
 }

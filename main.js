@@ -120,7 +120,7 @@ class CalculatorDisplay {
   canBeDisplayed(str) {
     let strLen;
     if (str.includes('.')) {
-      process this.checkFloat(str);
+      str = this.processFloat(str);
       strLen = str.length - 1;
     } else {
       strLen = str.length;

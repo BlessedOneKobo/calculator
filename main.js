@@ -159,6 +159,7 @@ class CalculatorDisplay {
 // ---| INITIALIZATION |---
 
 // DOM ELEMENTS
+document.body.focus();
 const numberDisplay = document.querySelector('.display > .number');
 const numberBtns = document.querySelectorAll('button[data-type="number"]');
 const operatorBtns = document.querySelectorAll('button[data-type="operator"]');
@@ -170,6 +171,7 @@ const evalObj = new CalculatorEvaluation();
 const displayObj = new CalculatorDisplay(numberDisplay, 9);
 
 // ---| EVENT LISTENERS |---
+document.body.addEventListener('keydown', handleKeyDown);
 numberBtns.forEach((btn) => {
   btn.addEventListener('click', handleNumberClick)
 });
@@ -182,9 +184,80 @@ utilityBtns.forEach((btn) => {
 
 // ---| EVENT HANDLERS |---
 
+// TODO - Fix bug in Firefox that prevents the capture of '/'
+function handleKeyDown(e) {
+  const key = e.key;
+  const validOperatorSymbols = ['+', '-', '*', '/', '=', 'Enter'];
+  console.log(e);
+
+  if (!isNaN(key)) {
+    processNumberInput(key);
+  } else if (validOperatorSymbols.includes(key)) {
+    processOperatorInput(convertSymbolToOperator(key));
+  } else {
+    processUtilityInput(key);
+  }
+}
+
 function handleNumberClick(e) {
   const clickedNumber = e.target.textContent;
+  processNumberInput(clickedNumber);
+}
 
+function handleOperatorClick(e) {
+  const clickedOperator = e.target.dataset.key;
+  processOperatorInput(clickedOperator);
+}
+
+function handleUtilityClick(e) {
+  const clickedUtility = e.target.dataset.key;
+  processUtilityInput(clickedUtility);
+}
+
+// ---| CALCULATOR HELPERS |---
+
+function convertSymbolToOperator(symbol) {
+  switch(symbol) {
+    case '+':               return 'add';
+    case '-':               return 'sub';
+    case '*':               return 'mul';
+    case '/':               return 'div';
+    case '=': case 'Enter': return 'equ';
+  }
+}
+
+function processUtilityInput(util) {
+  switch(util) {
+    case 'cls':
+      displayObj.clear();
+      evalObj.clear();
+      enableButtonCollection(operatorBtns, numberBtns, utilityBtns);
+      break;
+    case 'dec': case '.':
+      displayObj.showDecimalPoint(previousClick);
+      break;
+    case 'bck': case 'Backspace':
+      displayObj.removeCharacter();
+      break;
+  }
+}
+
+function processOperatorInput(operator) {
+  if (previousClick.type === 'number') {
+    const newOperand = Number(displayObj.str);
+    evalObj.operands.push(newOperand);
+  }
+
+  if (evalObj.operands.length === 2 || operator === 'equ') {
+    const result = evalObj.evaluate(displayObj);
+    determineDisplayAction(result);
+  }
+
+  evalObj.operator = operator;
+  previousClick.type = 'operator';
+}
+
+function processNumberInput(num) {
   if (previousClick.type === 'operator') {
     if (evalObj.divideByZeroError) {
       disableButtonCollection(operatorBtns);
@@ -193,54 +266,17 @@ function handleNumberClick(e) {
     displayObj.clear();
   }
 
-  displayObj.showNumberFromButton(clickedNumber, previousClick).show();
+  displayObj.showNumberFromButton(num, previousClick).show();
   previousClick.type = 'number';
 }
-
-function handleOperatorClick(e) {
-  const clickedOperator = e.target.dataset.key;
-
-  if (previousClick.type === 'number') {
-    const newOperand = Number(displayObj.str);
-    evalObj.operands.push(newOperand);
-  }
-
-  if (evalObj.operands.length === 2 || clickedOperator === 'equ') {
-    const result = evalObj.evaluate(displayObj);
-    determineDisplayAction(result);
-  }
-
-  evalObj.operator = clickedOperator;
-  previousClick.type = 'operator';
-}
-
-function handleUtilityClick(e) {
-  const clickedUtility = e.target.dataset.key;
-
-  switch(clickedUtility) {
-    case 'cls':
-      displayObj.clear();
-      evalObj.clear();
-      enableButtonCollection(operatorBtns, numberBtns, utilityBtns);
-      break;
-    case 'dec':
-      displayObj.showDecimalPoint(previousClick);
-      break;
-    case 'bck':
-      displayObj.removeCharacter();
-      break;
-  }
-}
-
-// ---| CALCULATOR UTILITIES |---
 
 function determineDisplayAction(result) {
   let resultStr = String(result);
 
   if (result === undefined) {
     resultStr = 'Cannot divide by zero';
-  } else {
-    resultStr = displayObj.canBeDisplayed(resultStr) ? resultStr : 'Overflow';
+  } else if (!displayObj.canBeDisplayed(resultStr)) {
+    resultStr = 'Number too large';
   }
 
   if (!isNaN(resultStr)) {

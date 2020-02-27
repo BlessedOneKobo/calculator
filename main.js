@@ -190,8 +190,8 @@ utilityBtns.forEach((btn) => {
 
 // ---| EVENT HANDLERS |---
 
-// TODO - Fix bug in Firefox that prevents the capture of '/'
 function handleKeyDown(e) {
+  e.preventDefault();
   const key = e.key;
   const validOperatorSymbols = ['+', '-', '*', '/', '=', 'Enter'];
 
@@ -292,7 +292,11 @@ function determineDisplayAction(result) {
 
   if (result === undefined) {
     resultStr = 'Cannot divide by zero';
-  } else if (!displayObj.canBeDisplayed(resultStr)) {
+  } else if (resultStr.includes('.')) {
+    resultStr = displayObj.processFloat(resultStr);
+  }
+
+  if (result !== undefined && !displayObj.canBeDisplayed(resultStr)) {
     resultStr = 'Number too large';
   }
 

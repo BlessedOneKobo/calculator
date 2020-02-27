@@ -50,7 +50,6 @@ table {
 /* Custom Styles */
 *, *:before, *:after {
   box-sizing: border-box;
-  letter-spacing: .1em;
 }
 
 body {
@@ -60,6 +59,7 @@ body {
 
 button {
   border: none;
+  box-shadow: 0 4px 2px #000;
 }
 
 button[data-type='number'], [data-key='dec'] {
@@ -73,6 +73,7 @@ button[data-type='operator'] {
 
 button[data-key='cls'] {
   background-color: #ffc6ae;
+  letter-spacing: .1em;
 }
 
 button[data-key='bck'] {
@@ -118,11 +119,11 @@ button[data-key='cls']:active {
 .calculator > .display {
   display: flex;
   flex-flow: row nowrap;
-  font-size: 2.8em;
+  font-size: 2.5em;
   background-color: #ddfcff;
-  margin-bottom: .4em;
+  margin-bottom: .5em;
   border-radius: 8px;
-  box-shadow: 2px 2px 4px #000, -2px -2px 4px #000;
+  box-shadow: 0 4px 4px #000, 0 0 2px #000;
 }
 
 .calculator > .display > .number {
@@ -135,8 +136,6 @@ button[data-key='cls']:active {
 .calculator > .keypad {
   display: flex;
   flex-flow: column nowrap;
-  box-shadow: 2px 2px 4px #000, -1px -1px 4px #000;
-  border-radius: 8px;
 }
 
 .calculator > .keypad > .row {
@@ -148,8 +147,8 @@ button[data-key='cls']:active {
   flex: 1 1 25%;
   height: 4em;
   font-size: 1.25em;
-  margin-right: 1%;
-  margin-bottom: 1%;
+  margin-right: 2%;
+  margin-bottom: 2%;
 }
 
 .calculator > .keypad > .row > button:last-child {
@@ -158,19 +157,6 @@ button[data-key='cls']:active {
 
 .calculator > .keypad > .row:last-child button {
   margin-bottom: 0;
-}
-
-.calculator > .keypad > .row:first-child > button:first-child {
-  border-top-left-radius: 8px;
-}
-.calculator > .keypad > .row:first-child > button:last-child {
- border-top-right-radius: 8px;
-}
-.calculator > .keypad > .row:last-child > button:first-child {
-  border-bottom-left-radius: 8px;
-}
-.calculator > .keypad > .row:last-child > button:last-child {
-  border-bottom-right-radius: 8px;
 }
 
 @media (max-width: 550px) {

@@ -1,6 +1,6 @@
 class CalculatorEvaluation {
   constructor() {
-    this.operands = [0];
+    this.operands = [];
     this.operator = '';
     this.divideByZeroError = false;
   }
@@ -9,47 +9,52 @@ class CalculatorEvaluation {
   evaluate(displayObj) {
     let result;
 
+    // Person operation on available operands
+    // (i.e if only one operand is available, make that operand the second)
     switch(this.operator) {
       case 'add': result = this.add();          break;
       case 'sub': result = this.sub();          break;
       case 'mul': result = this.mul();          break;
       case 'div': result = this.div();          break;
-      default:    result = this.operands.pop(); break;
     }
 
-    this.clear();
+    this.clear(result);
     displayObj.clear();
     return result;
   }
 
   // Addition helper
   add() {
-    return this.operands[0] + this.operands[1];
+    return this.operands[0] + (this.operands[1] || this.operands[0]);
   }
 
   // Subtraction helper
   sub() {
-    return this.operands[0] - this.operands[1];
+    return this.operands[0] - (this.operands[1] || this.operands[0]);
   }
 
   // Multiplication helper
   mul() {
-    return this.operands[0] * this.operands[1];
+    return this.operands[0] * (this.operands[1] || this.operands[0]);
   }
 
-  // Division helper; Returns undefined for division by zero
+  // Division helper
+  // Returns undefined for division by zero
   div() {
     if (this.operands[1] === 0) {
       return undefined;
     }
 
-    return this.operands[0] / this.operands[1];
+    return this.operands[0] / (this.operands[1] || this.operands[0]);
   }
 
   // Reset evaluation object
-  clear(displayObj, operatorBtns) {
-    this.operands = [];
-    this.operator = '';
+  clear(result) {
+    if (result === undefined) {
+      this.operands = [];
+      this.operator = '';
+    }
+
     this.divideByZeroError = false;
   }
 }
@@ -171,6 +176,7 @@ const evalObj = new CalculatorEvaluation();
 const displayObj = new CalculatorDisplay(numberDisplay, 9);
 
 // ---| EVENT LISTENERS |---
+
 document.body.addEventListener('keydown', handleKeyDown);
 numberBtns.forEach((btn) => {
   btn.addEventListener('click', handleNumberClick)
@@ -188,7 +194,6 @@ utilityBtns.forEach((btn) => {
 function handleKeyDown(e) {
   const key = e.key;
   const validOperatorSymbols = ['+', '-', '*', '/', '=', 'Enter'];
-  console.log(e);
 
   if (!isNaN(key)) {
     processNumberInput(key);
@@ -245,15 +250,27 @@ function processUtilityInput(util) {
 function processOperatorInput(operator) {
   if (previousClick.type === 'number') {
     const newOperand = Number(displayObj.str);
-    evalObj.operands.push(newOperand);
+    if (evalObj.operands.length === 0) {
+      evalObj.operands[0] = newOperand;
+    } else {
+      evalObj.operands.push(newOperand);
+    }
+  } else if (evalObj.operands.length === 2 && operator !== 'equ') {
+    evalObj.operands.pop();
   }
 
   if (evalObj.operands.length === 2 || operator === 'equ') {
     const result = evalObj.evaluate(displayObj);
-    determineDisplayAction(result);
+    const filteredResult = determineDisplayAction(result);
+    if (filteredResult) {
+      evalObj.operands[0] = filteredResult;
+    }
   }
 
-  evalObj.operator = operator;
+  if (operator !== 'equ') {
+    evalObj.operator = operator;
+  }
+
   previousClick.type = 'operator';
 }
 
@@ -281,12 +298,14 @@ function determineDisplayAction(result) {
 
   if (!isNaN(resultStr)) {
     displayObj.showNumber(resultStr);
-    evalObj.operands.push(Number(resultStr));
+    return Number(resultStr);
   } else {
     displayObj.showError(resultStr);
     disableButtonCollection(operatorBtns, numberBtns, utilityBtns);
     document.querySelector('[data-key="cls"]').disabled = false;
   }
+
+  return undefined;
 }
 
 function disableButtonCollection(...btnCollection) {

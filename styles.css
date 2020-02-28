@@ -97,7 +97,7 @@ button[data-key='cls']:active {
 
 .container {
   width: 75%;
-  margin: 2em auto 0 auto;
+  margin: 1em auto;
 }
 
 .calculator {
@@ -112,6 +112,10 @@ button[data-key='cls']:active {
   box-shadow: 4px 4px 4px #000;
 }
 
+.row {
+  margin-bottom: 2%;
+}
+
 .calculator > .row {
   flex: 0 1 100%;
 }
@@ -119,9 +123,7 @@ button[data-key='cls']:active {
 .calculator > .display {
   display: flex;
   flex-flow: row nowrap;
-  font-size: 2.5em;
   background-color: #ddfcff;
-  margin-bottom: .5em;
   border-radius: 8px;
   box-shadow: 0 4px 4px #000, 0 0 2px #000;
 }
@@ -130,6 +132,8 @@ button[data-key='cls']:active {
   flex: 1 1 100%;
   justify-content: flex-end;
   text-align: right;
+  font-size: 2.5em;
+  font-weight: bold;
   padding: .5em 0.25em;
 }
 
@@ -143,12 +147,15 @@ button[data-key='cls']:active {
   flex-flow: row nowrap;
 }
 
+.calculator > .keypad > .row:last-of-type {
+  margin-bottom: 0;
+}
+
 .calculator > .keypad > .row > button {
   flex: 1 1 25%;
   height: 4em;
   font-size: 1.25em;
   margin-right: 2%;
-  margin-bottom: 2%;
 }
 
 .calculator > .keypad > .row > button:last-child {
@@ -164,12 +171,17 @@ button[data-key='cls']:active {
     width: 85%;
   }
 
-  .calculator > .display {
-    font-size: 1.792em;
+  .row {
+    margin-bottom: 4%;
+  }
+
+  .calculator > .display > .number {
+    padding: .5em 0.5em;
   }
 
   .calculator > .keypad > .row > button {
     font-size: 1em;
+    margin-right: 4%;
   }
 
   button img {
@@ -185,7 +197,11 @@ button[data-key='cls']:active {
   }
 
   .calculator > .keypad > .row > button {
-    font-size: .8em;
+    font-size: .85em;
+  }
+
+  .calculator > .display > .number {
+    font-size: 1.4em;
   }
 
   button img {
